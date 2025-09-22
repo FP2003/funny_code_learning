@@ -25,7 +25,7 @@
         precision mediump float;
         
         void main(void) {
-            gl_FragColor = vec4(0.5, 0.9, 0.2, 1.0); //Green
+            gl_FragColor = vec4(0.0, 0.8, 0.2, 1.0); //Green
         }
     </script>
 
@@ -233,31 +233,6 @@
         }
 
         /**
-        * Draws the scene
-        */
-        function drawScene(){
-
-            gl.clearColor(0.0, 0.0, 0.0, 1.0);
-            gl.enable(gl.DEPTH_TEST);
-
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            gl.viewport(0,0,c_width, c_height);
-
-            mat4.perspective(45, c_width / c_height, 0.1, 10000.0, pMatrix);
-            mat4.identity(mvMatrix);
-            mat4.translate(mvMatrix, [0.0, 0.0, -5.0]);
-
-            gl.uniformMatrix4fv(prg.pMatrixUniform, false, pMatrix);
-            gl.uniformMatrix4fv(prg.mvMatrixUniform, false, mvMatrix);
-
-            gl.bindBuffer(gl.ARRAY_BUFFER, coneVertexBuffer);
-            gl.vertexAttribPointer(prg.vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
-
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, coneIndexBuffer);
-            gl.drawElements(gl.LINE_LOOP, indices.length, gl.UNSIGNED_SHORT, 0);
-        }
-
-        /**
         * Render Loop
         */
         function renderLoop() {
@@ -324,7 +299,7 @@
             gl.vertexAttribPointer(prg.vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
 
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, coneIndexBuffer);
-            gl.drawElements(gl.LINE_LOOP, indices.length, gl.UNSIGNED_SHORT, 0);
+            gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
         }
 
         // Set up animation frame request
