@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple WebGL Cube</title>
+    <style>
+        canvas { border: 2px solid black; }
+    </style>
+
+    <script id="shader-vs" type="x-shader/x-vertex">
+        attribute vec3 aVertexPosition;
+        uniform mat4 uMVMatrix;
+        uniform mat4 uPMatrix;
+        
+        void main(void) {
+            gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+        }
+    </script>
+
+    <script id="shader-fs" type="x-shader/x-fragment">
+        precision mediump float;
+        void main(void) {
+            gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Simple red color
+        }
+    </script>
+
+    <script>
+        var gl;
+        var canvas;
+        var shaderProgram;
+        var vertexBuffer;
+        var indexBuffer;
+        var rotation = 0;
+
+        function initGL() {
+            canvas = document.getElementById("canvas");
+            gl = canvas.getContext("webgl");
+            gl.viewportWidth = canvas.width;
+            gl.viewportHeight = canvas.height;
+        }
+
+        function getShader(id) {
+            var shader;
+            var shaderScript = document.getElementById(id);
+            
+            if (shaderScript.type === "x-shader/x-fragment") {
+                shader = gl.createShader(gl.FRAGMENT_SHADER);
+            } else {
+                shader = gl.createShader(gl.VERTEX_SHADER);
+            }
+
+            gl.shaderSource(shader, shaderScript.text);
+            gl.compileShader(shader);
+
+            return shader;
+        }
+
+        function initShaders() {
+            var fragmentShader = getShader("shader-fs");
+            var vertexShader = getShader("shader-vs");
+
+            shaderProgram = gl.createProgram();
+            gl.attachShader(shaderProgram, vertexShader);
+            gl.attachShader(shaderProgram, fragmentShader);
+            gl.linkProgram(shaderProgram);
+
+            gl.useProgram(shaderProgram);
+
+            shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+            gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+
+            shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
+            shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+        }
+
+        function initBuffers() {
+            // Cube vertices
+            var vertices = [
+                // Front face
+                -1.0, -1.0,  1.0,
+                 1.0, -1.0,  1.0,
+                 1.0,  1.0,  1.0,
+                -1.0,  1.0,  1.0,
+
+                // Back face
+                -1.0, -1.0, -1.0,
+                -1.0,  1.0, -1.0,
+                 1.0,  1.0, -1.0,
+                 1.0, -1.0, -1.0,
+            ];
+
+            vertexBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+            // Cube indices
+            var indices = [
+                0, 1, 2,    0, 2, 3,    // Front
+                4, 5, 6,    4, 6, 7,    // Back
+                5, 3, 2,    5, 2, 6,    // Top
+                4, 7, 1,    4, 1, 0,    // Bottom
+                7, 6, 2,    7, 2, 1,    // Right
+                4, 0, 3,    4, 3, 5     // Left
+            ];
+
+            indexBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+            indexBuffer.numItems = indices.length;
+        }
+
+        function drawScene() {
+            gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+            // Simple perspective matrix
+            var pMatrix = new Float32Array([
+                2.42, 0, 0, 0,
+                0, 2.42, 0, 0,
+                0, 0, -1.002, -1,
+                0, 0, -0.2002, 0
+            ]);
+
+            // Model-view matrix with rotation
+            rotation += 0.01;
+            var c = Math.cos(rotation);
+            var s = Math.sin(rotation);
+            var mvMatrix = new Float32Array([
+                c, 0, -s, 0,
+                0, 1, 0, 0,
+                s, 0, c, 0,
+                0, 0, -6, 1
+            ]);
+
+            gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
+            gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+            gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+            gl.drawElements(gl.TRIANGLES, indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            drawScene();
+        }
+
+        function start() {
+            initGL();
+            initShaders();
+            initBuffers();
+
+            gl.clearColor(0.0, 0.0, 0.0, 1.0);
+            gl.enable(gl.DEPTH_TEST);
+
+            animate();
+        }
+    </script>
+</head>
+<body onload="start()">
+    <canvas id="canvas" width="500" height="500">
+        Your browser doesn't support HTML5 canvas.
+    </canvas>
+</body>
+</html>
