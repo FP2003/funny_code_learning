@@ -4,7 +4,7 @@ import "fmt"
 
 func main() {
 
-	var flags byte = 10
+	var flags byte = 10 // 1010
 
 	fmt.Printf("Flag #1:%v \n", (flags&1) > 0)
 	fmt.Printf("Flag #2:%v \n", (flags&2) > 0)
