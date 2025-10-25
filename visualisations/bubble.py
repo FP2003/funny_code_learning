@@ -7,9 +7,9 @@ lst = np.random.randint(0, 100, amount)
 x = np.arange(0, amount, 1)
 
 n = len(lst)
+plt.figure("Bubble Sort")
 for i in range(n):
     for j in range(0, n - i - 1):
-        plt.figure("Bubble Sort")
         plt.bar(x, lst)
         plt.pause(0.005)
         plt.clf()
